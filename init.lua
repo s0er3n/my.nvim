@@ -15,14 +15,7 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- NOTE: Here is where you install your plugins.
---  You can configure plugins using the `config` key.
---
---  You can also configure plugins after the setup call,
---    as they will be available in your neovim runtime.
 require('lazy').setup({
-  -- NOTE: First, some plugins that don't require any configuration
-
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
@@ -30,8 +23,6 @@ require('lazy').setup({
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
 
-  -- NOTE: This is where your plugins related to LSP can be installed.
-  --  The configuration is done below. Search for lspconfig to find it below.
   {
     -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
@@ -212,13 +203,12 @@ vim.o.termguicolors = true
 
 vim.opt.swapfile = false
 -- [[ Basic Keymaps ]]
+vim.o.completeopt = "menuone,preview,noselect"
 
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
 vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 
--- Remap paste
-vim.keymap.set({ 'n', 'v' }, 'p', 'P', { silent = true })
 -- Remap for dealing with word wrap
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
@@ -276,7 +266,7 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 vim.api.nvim_set_keymap(
   "n",
   "<space>fb",
-  ":Telescope file_browser path=%:p:h select_buffer=true<CR>",
+  ":Telescope file_browser<CR>",
   { noremap = true }
 )
 vim.api.nvim_set_keymap(
@@ -289,7 +279,8 @@ vim.api.nvim_set_keymap(
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim', 'python' },
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim', "ninja", 'rst',
+    'toml' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = true,
@@ -337,15 +328,6 @@ require('nvim-treesitter.configs').setup {
       goto_previous_end = {
         ['[M'] = '@function.outer',
         ['[]'] = '@class.outer',
-      },
-    },
-    swap = {
-      enable = true,
-      swap_next = {
-        ['<leader>a'] = '@parameter.inner',
-      },
-      swap_previous = {
-        ['<leader>A'] = '@parameter.inner',
       },
     },
   },
@@ -413,10 +395,11 @@ end
 local servers = {
   -- clangd = {},
   -- gopls = {},
-  -- pyright = {},
-  -- rust_analyzer = {},
-  -- tsserver = {},
-  -- html = { filetypes = { 'html', 'twig', 'hbs'} },
+  pyright = {},
+  ruff_lsp = {},
+  rust_analyzer = {},
+  tsserver = {},
+  html = { filetypes = { 'html', 'twig', 'hbs', 'jinja2' } },
 
   lua_ls = {
     Lua = {
@@ -438,6 +421,14 @@ local mason_lspconfig = require 'mason-lspconfig'
 
 mason_lspconfig.setup {
   ensure_installed = vim.tbl_keys(servers),
+  ruff_lsp = function()
+    require("lazyvim.util").on_attach(function(client, _)
+      if client.name == "ruff_lsp" then
+        -- Disable hover in favor of Pyright
+        client.server_capabilities.hoverProvider = false
+      end
+    end)
+  end,
 }
 
 mason_lspconfig.setup_handlers {
@@ -497,6 +488,7 @@ cmp.setup {
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
+    { name = 'nvim_lsp_signature_help' }
   },
 }
 

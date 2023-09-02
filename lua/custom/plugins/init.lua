@@ -3,6 +3,26 @@
 --
 -- See the kickstart.nvim README for more information
 return {
+  {
+    'stevearc/oil.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    keys = {
+      { "-", "<CMD>Oil<CR>", { desc = "Open parent directory" } }
+    },
+  },
+  {
+    "folke/persistence.nvim",
+    event = "BufReadPre",
+    opts = { options = { "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp" } },
+    -- stylua: ignore
+    keys = {
+      { "<leader>qs", function() require("persistence").load() end,                desc = "Restore Session" },
+      { "<leader>ql", function() require("persistence").load({ last = true }) end, desc = "Restore Last Session" },
+      { "<leader>qd", function() require("persistence").stop() end,                desc = "Don't Save Current Session" },
+    },
+  },
   { "ryanoasis/vim-devicons" },
   { "hrsh7th/cmp-nvim-lsp-signature-help" },
 
@@ -41,7 +61,10 @@ return {
     config = function()
       require("obsidian").setup({
         dir = "~/Documents/NewBrain", -- no need to call 'vim.fn.expand' here
+        mappings = {
 
+          ["gf"] = require("obsidian.mapping").gf_passthrough(),
+        }
       }
       )
     end,

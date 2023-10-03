@@ -3,6 +3,18 @@
 --
 -- See the kickstart.nvim README for more information
 return {
+  { "David-Kunz/gen.nvim", enabled = false },
+  { "lepture/vim-jinja" },
+
+  {
+    "luckasRanarison/nvim-devdocs",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    opts = {}
+  },
   {
     'stevearc/oil.nvim',
     opts = {},
@@ -49,7 +61,7 @@ return {
       -- see below for full list of optional dependencies 👇
     },
     keys = {
-      { "n", "gf", function()
+      { "gf", function()
         if require("obsidian").util.cursor_on_markdown_link() then
           return "<cmd>ObsidianFollowLink<CR>"
         else
